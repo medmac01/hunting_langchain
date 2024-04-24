@@ -3,11 +3,16 @@ from langchain.tools import tool
 
 
 from pymisp import PyMISP
+from dotenv import load_dotenv
+import os
 
+load_dotenv(override=True)
 
-URL = "https://9589-197-230-122-195.ngrok-free.app"
-KEY = "DDL2X1VilJzgLvDSo58OMhVHYlnRRg9ShHaiadpA"
+URL = os.getenv('MISP_URL')
+KEY = os.getenv('MISP_KEY')
 verify_cert = False
+
+print(URL, KEY)
 
 misp = PyMISP(url=URL, key=KEY, ssl=verify_cert)
 
@@ -21,11 +26,12 @@ class MispTool():
       - A list of events that match the keyword
       """
 
-      events = misp.search(value=keyword, limit=5)
-      return events
+      events = misp.search(controller='attributes', value=keyword, limit=1, metadata=True, include_event_tags=False, include_context=False, return_format='json', sg_reference_only=True)
+      results = """Answer user question using these search results:\n\n"""
+      return results + str(events)
     
     @tool("MISP search Tool by date")
-    def search_by_date(date_from: str = None, date_to: str = None):
+    def search_by_date(date_from: str = None, date_to: str = None, metadata=True):
       """Useful tool to retrieve events that match a specific date or date range, use this if you know the date of the event
       Parameters:
       - date_from: The start date of the event

@@ -1,5 +1,7 @@
 from langchain_community.llms import Ollama
 
+from langchain import hub
+
 from langchain.chains.conversation.memory import ConversationBufferWindowMemory
 
 from tools.cve_avd_tool import CVESearchTool
@@ -10,11 +12,12 @@ from langchain.agents import initialize_agent, AgentType, load_tools
 from dotenv import load_dotenv
 import os
 
-load_dotenv()
+load_dotenv(override=True)
 
-llm = Ollama(model="openhermes", base_url=os.getenv('OLLAMA_HOST'), temperature=0.1, num_predict=-1)
+
+llm = Ollama(model="openhermes", base_url=os.getenv('OLLAMA_HOST'), temperature=0.3, num_predict=-1)
 wrn = Ollama(model="wrn", base_url=os.getenv('OLLAMA_HOST'))
-llama3 = Ollama(model="llama3", base_url=os.getenv('OLLAMA_HOST'))
+llama3 = Ollama(model="llama3", base_url=os.getenv('OLLAMA_HOST'), temperature=0.3)
 
 
 cve_search_tool = CVESearchTool().cvesearch
@@ -31,11 +34,13 @@ memory = ConversationBufferWindowMemory(
 )
 
 
+prompt = hub.pull("hwchase17/react-chat-json")
 # create our agent
 conversational_agent = initialize_agent(
     # agent="chat-conversational-react-description",
     agent=AgentType.STRUCTURED_CHAT_ZERO_SHOT_REACT_DESCRIPTION,
     tools=tools,
+    prompt=prompt,
     llm=llm,
     verbose=True,
     max_iterations=3,
@@ -43,6 +48,10 @@ conversational_agent = initialize_agent(
     early_stopping_method='generate',
     handle_parsing_errors=True
 )
+
+# conversational_agent.agent.llm_chain.prompt.messages[0].prompt.template = """
+# 'Respond to the human as helpfully and accurately as possible. You have access to the following tools:\n\n\n\nUse a json blob to specify a tool by providing an action key (tool name) and an action_input key (tool input).\n\nValid "action" values: "Final Answer" or \n\nProvide only ONE action per $JSON_BLOB, as shown:\n\n```\n{{\n  "action": $TOOL_NAME,\n  "action_input": $INPUT\n}}\n```\n\nFollow this format:\n\nQuestion: input question to answer\nThought: consider previous and subsequent steps\nAction:\n```\n$JSON_BLOB\n```\nObservation: action result\n... (repeat Thought/Action/Observation N times)\nThought: I know what to respond\nAction:\n```\n{{\n  "action": "Final Answer",\n  "action_input": "Final response to human"\n}}\n```\n\nBegin! Reminder to ALWAYS respond with a valid json blob of a single action. Use tools if necessary. Respond directly if appropriate. Format is Action:```$JSON_BLOB```then Observation:.\nThought:'
+# """
 
 def invoke(input_text):
     return conversational_agent({"input":input_text})

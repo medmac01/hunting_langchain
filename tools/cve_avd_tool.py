@@ -12,12 +12,12 @@ def format_cve(cve_response):
     Returns:
     - A list of strings, each a formatted prompt for LLM based on the CVE entries in the response.
     """
-    formatted_prompts = ""
+    formatted_prompts = "Use these CVE Search Results to answer user question:\n\n"
     
     for vulnerability in cve_response['vulnerabilities']:
         cve = vulnerability.get('cve', {})
-        prompt = f"Explain {cve.get('id', 'N/A')} in simple terms:\n\n"
-        prompt += f"- CVE ID: {cve.get('id', 'N/A')}\n"
+        # prompt = f"Explain {cve.get('id', 'N/A')} in simple terms:\n\n"
+        prompt = f"- CVE ID: {cve.get('id', 'N/A')}\n"
         prompt += f"- Status: {cve.get('vulnStatus', 'Unknown')}\n"
         
         descriptions = cve.get('descriptions', [])
