@@ -2,6 +2,8 @@ from langchain_community.llms import Ollama
 
 from langchain import hub
 
+from agentops.langchain_callback_handler import LangchainCallbackHandler as AgentOpsLangchainCallbackHandler
+
 from langchain.chains.conversation.memory import ConversationBufferWindowMemory
 
 from tools.cve_avd_tool import CVESearchTool
@@ -11,6 +13,7 @@ from langchain.agents import initialize_agent, AgentType, load_tools
 
 from dotenv import load_dotenv
 import os
+import re
 
 load_dotenv(override=True)
 
@@ -34,6 +37,18 @@ memory = ConversationBufferWindowMemory(
     return_messages=True
 )
 
+agentops_handler = AgentOpsLangchainCallbackHandler(api_key=os.getenv("AGENTOPS_API_KEY"), tags=['Langchain Example'])
+
+#Error handling
+def _handle_error(error) -> str:
+
+    pattern = r'```(?!json)(.*?)```'
+    match = re.search(pattern, error, re.DOTALL)
+    if match:
+        return "The answer contained a code blob which caused the parsing to fail, i recovered the code blob. Just use it to answer the user question: " + match.group(1)
+    else: 
+        return llm.invoke(f"""Try to summarize and explain the following error into 1 short and consice sentence and give a small indication to correct the error: {error} """)
+
 
 prompt = hub.pull("hwchase17/react-chat-json")
 # create our agent
@@ -47,7 +62,11 @@ conversational_agent = initialize_agent(
     max_iterations=3,
     memory=memory,
     early_stopping_method='generate',
-    handle_parsing_errors=True
+    # callbacks=[agentops_handler],
+    handle_parsing_errors=True,
+    return_intermediate_steps=True,
+    max_iterations=3,
+    max_execution_time=40,
 )
 
 # conversational_agent.agent.llm_chain.prompt.messages[0].prompt.template = """
