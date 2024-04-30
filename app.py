@@ -1,5 +1,6 @@
 import streamlit as st
 from agents import investigator
+# from agents_openai_fc import investigator
 
 st.title('Cyber Hunter!')
 st.caption("🚀 A streamlit chatbot powered by OpenAI LLM")
@@ -16,6 +17,8 @@ if prompt := st.chat_input():
     st.chat_message("user").write(prompt)
     response = investigator.invoke(prompt)
     msg = response["output"]
+
+    # print(response['intermediate_steps'])
     
     # If there's an existing assistant message, update it with the new response
     if st.session_state.messages[-1]["role"] == "assistant":
