@@ -27,6 +27,10 @@ class MispTool():
       """
 
       events = misp.search(controller='attributes', value=keyword, limit=5, metadata=True, include_event_tags=False, include_context=False, return_format='json', sg_reference_only=True)
+      
+      if len(events['Attribute']) == 0:
+        return "No events found matching the search criteria."
+      
       results = """Answer user question using these search results:\n\n"""
       return results + str(events)
     
