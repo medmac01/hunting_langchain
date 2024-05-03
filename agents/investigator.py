@@ -8,6 +8,8 @@ from langchain.chains.conversation.memory import ConversationBufferWindowMemory
 
 from tools.cve_avd_tool import CVESearchTool
 from tools.misp_tool import MispTool
+from tools.coder_tool import CoderTool
+from tools.mitre_tool import MitreTool
 
 from langchain.agents import initialize_agent, AgentType, load_tools
 
@@ -27,6 +29,8 @@ cve_search_tool = CVESearchTool().cvesearch
 misp_search_tool =  MispTool().search
 misp_search_by_date_tool = MispTool().search_by_date
 misp_search_by_event_id_tool = MispTool().search_by_event_id
+coder_tool = CoderTool().code_generation_tool
+
 
 tools = [cve_search_tool, misp_search_tool, misp_search_by_date_tool, misp_search_by_event_id_tool]
 

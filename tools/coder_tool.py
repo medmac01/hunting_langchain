@@ -15,17 +15,16 @@ wrn = Ollama(model="wrn", base_url=os.getenv('OLLAMA_HOST'), num_predict=512, te
 
 class CoderTool():
   @tool("Code Generation Tool")
-  def code_generation_tool(prompt: str, language: str = "python"):
-    """The code generation tool is a tool that can generate code snippets based on a given prompt. 
-    It uses a language model to generate code snippets that are relevant to the given prompt.
+  def code_generation_tool(instruction: str, language: str = "python"):
+    """The code generation tool is a tool that can generate code snippets based on a given instruction. 
+    It uses a language model to generate code snippets that are relevant to the given instruction.
     Parameters:
-    - prompt: The prompt for which the code snippet should be generated.
+    - instruction: The instruction for which the code snippet should be generated.
     - language: The programming language in which the code snippet should be generated. Default is python.
     Returns:
-    - A code snippet generated based on the given prompt.
+    - A code snippet generated based on the given instruction.
     """
 
-    print(prompt)
-    response = wrn.invoke(prompt)
+    response = wrn.invoke(instruction)
     response = response.replace("```", "")
     return f"'{response}'"
