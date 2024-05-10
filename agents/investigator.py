@@ -38,13 +38,15 @@ coder_tool = CoderTool().code_generation_tool
 get_technique_by_id = MitreTool().get_technique_by_id
 get_technique_by_name = MitreTool().get_technique_by_name
 get_malware_by_name = MitreTool().get_malware_by_name
+get_tactic_by_keyword = MitreTool().get_tactic_by_keyword
 
-tools = [cve_search_tool, misp_search_tool, misp_search_by_date_tool, misp_search_by_event_id_tool, coder_tool, get_technique_by_id, get_technique_by_name, get_malware_by_name]
+tools = [cve_search_tool, misp_search_tool, misp_search_by_date_tool, misp_search_by_event_id_tool, 
+         coder_tool, get_technique_by_id, get_technique_by_name, get_malware_by_name, get_tactic_by_keyword]
 
 # conversational agent memory
 memory = ConversationBufferWindowMemory(
     memory_key='chat_history',
-    k=3,
+    k=4,
     return_messages=True
 )
 

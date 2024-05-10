@@ -41,9 +41,9 @@ class MitreTool():
         result = store[domain].query([Filter('name', 'contains', malware_name), Filter('type', '=', 'malware')])
         return result if result else "No malware found with that name"
     
-    @tool("MITRE Tactic search by name")
-    def get_tactic_by_name(domain: str, tactic_name: str):
-        """Get the tactic by its name. Domain should be 'enterprise', 'mobile' or 'ics'
+    @tool("MITRE Technique search by keyword")
+    def get_tactic_by_keyword(domain: str, keyword: str):
+        """Search for tactics/techniques by a keyword. Domain should be 'enterprise', 'mobile' or 'ics'
         Tactics represent the "why" of an ATT&CK technique or sub-technique. It is the adversary's tactical goal: the reason for performing an action. For example, an adversary may want to achieve credential access."""
-        result = store[domain].query([Filter('name', 'contains', tactic_name), Filter('type', '=', 'attack-pattern')])
-        return result if result else "No tactic found with that name"
+        result = store[domain].query([Filter('description', 'contains', keyword)])
+        return result if result else "No tactics/techniques matches the keyword you provided"
