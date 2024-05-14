@@ -8,7 +8,7 @@ from langchain.chains.conversation.memory import ConversationBufferWindowMemory
 
 from langchain.agents import initialize_agent, AgentType, load_tools
 
-from langchain.tools import StructuredTool, Tool
+from langchain.tools import StructuredTool, Tool, ShellTool
 
 from dotenv import load_dotenv
 import os
@@ -23,7 +23,7 @@ from .investigator import *
 load_dotenv(override=True)
 
 
-llm = Ollama(model="openhermes", base_url=os.getenv('OLLAMA_HOST'), temperature=0.3, num_predict=-1, num_ctx=32768)
+llm = Ollama(model="openhermes", base_url=os.getenv('OLLAMA_HOST'), temperature=0.3, num_predict=-1)
 wrn = Ollama(model="wrn", base_url=os.getenv('OLLAMA_HOST'))
 
 # def get_json_agent(json_path: str):
@@ -59,10 +59,11 @@ wrn = Ollama(model="wrn", base_url=os.getenv('OLLAMA_HOST'))
 #         return result
 
 investigate_tool = Tool(name="Investigate Tool", 
-                        description="This tool will help you execute a query to find information about a security event. Just provide the request and get the response.", 
+                        description="This tool will help you execute a query to find information about a security event.(Can be a MISP event, CVE, MITRE attack or technique, malware...) Just provide the request and get the response.", 
                         func=conversational_agent.run)
 
-tools = [investigate_tool]
+shell_tool = ShellTool()
+tools = [investigate_tool, shell_tool]
 
 
 memory = ConversationBufferWindowMemory(
@@ -90,8 +91,13 @@ template = agent.agent.llm_chain.prompt.messages[0].prompt.template
 agent.agent.llm_chain.prompt.messages[0].prompt.template = """You are a cyber security analyst, you role is to respond to the human queries in a technical way while providing detailed explanations when providing final answer.
 You are provided with a set of tools to help you answer the questions. Use the tools to help you answer the questions.
 Always delegate the investigation to the Investigate Tool. The Investigate Tool will perform the investigation and provide the results, which you will use to answer the user's question. If the Investigate Tool's response contains some important information, answer the user's question while providing the information. If the Investigate Tool's response does not contain important information, use the Investigate Tool's response to answer the user's question.
-""" + template
-
+If the user asked you to execute a command, use the Shell Tool to execute the command and provide the output to the user.
+Also try to preserve any code blocks in the response as well as links, as they may contain important information.
+If the question is not clear, ask the user to clarify the question.
+One important thing to remember is that if the question is composed of multiple questions, answer each question separately in a sequential manner.
+NEVER ANSWER QUESTIONS THAT ARE NOT RELATED TO CYBERSECURITY.
+"""
+# print(agent.agent.llm_chain.prompt.messages[0].prompt.template)
 
 def invoke(input_text):
     return agent({"input":input_text})

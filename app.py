@@ -1,5 +1,5 @@
 import streamlit as st
-from agents import investigator, planner
+from agents import investigator, router
 # from agents_openai_fc import investigator
 
 st.title('Cyber Hunter!')
@@ -15,7 +15,7 @@ if prompt := st.chat_input():
 
     st.session_state.messages.append({"role": "user", "content": prompt})
     st.chat_message("user").write(prompt)
-    response = planner.invoke(prompt)
+    response = router.invoke(prompt)
     msg = response["output"]
 
     # print(response['intermediate_steps'])
@@ -33,7 +33,7 @@ if st.button("Regenerate Response"):
     st.session_state.messages.pop()  # Remove the latest assistant message
     prompt = st.session_state.messages[-1]["content"]  # Retrieve user's last input
     with st.spinner("Searching..."):
-        response = planner.invoke(prompt)
+        response = router.invoke(prompt)
         msg = response["output"]
         
         # If there's an existing assistant message, update it with the new response
